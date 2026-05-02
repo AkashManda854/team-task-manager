@@ -9,7 +9,7 @@ const DashboardPage = () => {
   const [projects, setProjects] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  // loading state removed because it's not used in the UI; keep fetch state internal if needed
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
@@ -25,7 +25,6 @@ const DashboardPage = () => {
 
   const fetchData = async () => {
     try {
-      setLoading(true);
       const [projectsRes, tasksRes] = await Promise.all([
         projectService.getProjects(),
         taskService.getTasks(),
@@ -35,7 +34,6 @@ const DashboardPage = () => {
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to load data');
     } finally {
-      setLoading(false);
     }
   };
 

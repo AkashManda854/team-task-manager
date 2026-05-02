@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { projectService, taskService, authService } from '../services';
 import TaskList from '../components/TaskList';
@@ -16,17 +16,7 @@ const ProjectPage = () => {
   const [memberEmail, setMemberEmail] = useState('');
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const currentUser = authService.getCurrentUser();
-    if (!currentUser) {
-      navigate('/login');
-    } else {
-      setUser(currentUser);
-      fetchProjectData();
-    }
-  }, [projectId, navigate]);
-
-  const fetchProjectData = async () => {
+  const fetchProjectData = useCallback(async () => {
     try {
       setLoading(true);
       const projectRes = await projectService.getProjectById(projectId);
@@ -39,7 +29,18 @@ const ProjectPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [projectId]);
+
+  useEffect(() => {
+    const currentUser = authService.getCurrentUser();
+    if (!currentUser) {
+      navigate('/login');
+    } else {
+      setUser(currentUser);
+      fetchProjectData();
+    }
+  }, [fetchProjectData, navigate]);
+
 
   const handleAddMember = async (e) => {
     e.preventDefault();

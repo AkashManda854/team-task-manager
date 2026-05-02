@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { projectService, authService } from '../services';
+import { projectService } from '../services';
 import '../styles/projectlist.css';
 
 const ProjectList = ({ projects, user, onRefresh }) => {
