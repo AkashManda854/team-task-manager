@@ -1,11 +1,21 @@
 const mongoose = require('mongoose');
 
+const getMongoUri = () => {
+  return (
+    process.env.MONGODB_URI ||
+    process.env.MONGO_URI ||
+    process.env.DATABASE_URL ||
+    process.env.RAILWAY_MONGODB_URI ||
+    ''
+  );
+};
+
 const connectDB = async () => {
   try {
-    const mongoURI = process.env.MONGODB_URI;
+    const mongoURI = getMongoUri();
 
     if (!mongoURI) {
-      console.log('No MONGODB_URI configured; skipping MongoDB connection and using DEMO MODE');
+      console.log('No MongoDB env var configured; skipping MongoDB connection and using DEMO MODE');
       return false;
     }
 
