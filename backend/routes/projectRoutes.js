@@ -1,12 +1,13 @@
 const express = require('express');
 const authMiddleware = require('../middleware/authMiddleware');
-const roleMiddleware = require('../middleware/roleMiddleware');
 const {
   createProject,
   getProjects,
   getProjectById,
   addMember,
   removeMember,
+  editProject,
+  deleteProject,
 } = require('../controllers/projectController');
 
 const router = express.Router();
@@ -15,12 +16,14 @@ const router = express.Router();
 router.use(authMiddleware);
 
 // Non-parameterized routes must come before /:id routes
-router.post('/', roleMiddleware('Admin'), createProject);
+router.post('/', createProject);
 router.get('/', getProjects);
-router.put('/add-member', roleMiddleware('Admin'), addMember);
-router.put('/remove-member', roleMiddleware('Admin'), removeMember);
+router.put('/add-member', addMember);
+router.put('/remove-member', removeMember);
 
 // Parameterized routes
 router.get('/:id', getProjectById);
+router.put('/:id', editProject);
+router.delete('/:id', deleteProject);
 
 module.exports = router;

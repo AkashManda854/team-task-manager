@@ -105,6 +105,17 @@ class InMemoryDB {
     }
     return false;
   }
+
+  deleteProject(id) {
+    const index = this.projects.findIndex((p) => p._id === id);
+    if (index > -1) {
+      this.projects.splice(index, 1);
+      // Also delete associated tasks
+      this.tasks = this.tasks.filter((t) => t.projectId !== id);
+      return true;
+    }
+    return false;
+  }
 }
 
 // Global database instance

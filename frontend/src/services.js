@@ -28,6 +28,11 @@ export const authService = {
   getCurrentUser: () => {
     return JSON.parse(localStorage.getItem('user'));
   },
+
+  searchUsers: async (query) => {
+    const response = await api.get(`/auth/search?query=${encodeURIComponent(query)}`);
+    return response.data;
+  },
 };
 
 // Project services
@@ -44,6 +49,16 @@ export const projectService = {
 
   getProjectById: async (id) => {
     const response = await api.get(`/projects/${id}`);
+    return response.data;
+  },
+
+  editProject: async (id, name, description) => {
+    const response = await api.put(`/projects/${id}`, { name, description });
+    return response.data;
+  },
+
+  deleteProject: async (id) => {
+    const response = await api.delete(`/projects/${id}`);
     return response.data;
   },
 

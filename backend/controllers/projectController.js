@@ -251,4 +251,113 @@ const removeMember = async (req, res) => {
   }
 };
 
-module.exports = { createProject, getProjects, getProjectById, addMember, removeMember };
+const editProject = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, description } = req.body;
+
+    if (!name) {
+      return res.status(400).json({ message: 'Please provide a project name' });
+    }
+
+    // Demo mode
+    if (global.demoMode) {
+      const project = global.db.findProjectById(id);
+
+      if (!project) {
+        return res.status(404).json({ message: 'Project not found' });
+      }
+
+      if (project.createdBy !== req.user.id) {
+        return res.status(403).json({ message: 'Only project creator can edit project' });
+      }
+
+      project.name = name;
+      if (description !== undefined) project.description = description;
+
+      return res.status(200).json({
+        message: 'Project updated successfully (Demo Mode)',
+        project: {
+          _id: project._id,
+          name: project.name,
+          description: project.description,
+          createdBy: {
+            _id: project.createdBy,
+            name: 'Admin User',
+          },
+          members: project.members.map((m) => ({
+            _id: m,
+            name: 'Team Member',
+          })),
+        },
+      });
+    }
+
+    const project = await Project.findById(id);
+
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+
+    if (project.createdBy.toString() !== req.user.id && req.user.role !== 'Admin') {
+      return res.status(403).json({ message: 'Only project creator can edit project' });
+    }
+
+    project.name = name;
+    if (description !== undefined) project.description = description;
+
+    await project.save();
+
+    res.status(200).json({
+      message: 'Project updated successfully',
+      project: await project.populate(['createdBy', 'members']),
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+const deleteProject = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Demo mode
+    if (global.demoMode) {
+      const project = global.db.findProjectById(id);
+
+      if (!project) {
+        return res.status(404).json({ message: 'Project not found' });
+      }
+
+      if (project.createdBy !== req.user.id) {
+        return res.status(403).json({ message: 'Only project creator can delete project' });
+      }
+
+      global.db.deleteProject(id);
+
+      return res.status(200).json({
+        message: 'Project deleted successfully (Demo Mode)',
+      });
+    }
+
+    const project = await Project.findById(id);
+
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+
+    if (project.createdBy.toString() !== req.user.id && req.user.role !== 'Admin') {
+      return res.status(403).json({ message: 'Only project creator can delete project' });
+    }
+
+    await Project.findByIdAndDelete(id);
+
+    res.status(200).json({
+      message: 'Project deleted successfully',
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+module.exports = { createProject, getProjects, getProjectById, addMember, removeMember, editProject, deleteProject };

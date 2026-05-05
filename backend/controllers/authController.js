@@ -144,4 +144,51 @@ const login = async (req, res) => {
   }
 };
 
-module.exports = { signup, login };
+const searchUsers = async (req, res) => {
+  try {
+    const { query } = req.query;
+
+    if (!query) {
+      return res.status(400).json({ message: 'Please provide a search query' });
+    }
+
+    // Demo mode
+    if (global.demoMode) {
+      const users = global.db.users.filter(
+        (u) =>
+          u.email.toLowerCase().includes(query.toLowerCase()) ||
+          u.name.toLowerCase().includes(query.toLowerCase())
+      );
+
+      return res.status(200).json({
+        message: 'Users found (Demo Mode)',
+        users: users
+          .filter((u) => u._id !== req.user.id)
+          .map((u) => ({
+            _id: u._id,
+            name: u.name,
+            email: u.email,
+            role: u.role,
+          })),
+      });
+    }
+
+    // MongoDB mode
+    const users = await User.find({
+      $or: [
+        { email: { $regex: query, $options: 'i' } },
+        { name: { $regex: query, $options: 'i' } },
+      ],
+      _id: { $ne: req.user.id },
+    }).select('_id name email role');
+
+    res.status(200).json({
+      message: 'Users found',
+      users,
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+module.exports = { signup, login, searchUsers };
