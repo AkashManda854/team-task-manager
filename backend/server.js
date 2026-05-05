@@ -40,9 +40,14 @@ const connectDB = require('./config/db');
 
 const startServer = async () => {
   try {
-    await connectDB();
-    global.demoMode = false;
-    console.log("✅ Connected to MongoDB");
+    const isConnected = await connectDB();
+    global.demoMode = !isConnected;
+
+    if (isConnected) {
+      console.log('✅ Connected to MongoDB');
+    } else {
+      console.log('⚠️ Running in DEMO MODE');
+    }
   } catch (error) {
     console.log('⚠️ Running in DEMO MODE');
     global.demoMode = true;
@@ -51,7 +56,7 @@ const startServer = async () => {
   const PORT = process.env.PORT || 5000;
 
   app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`Server running on ${PORT}`);
   });
 };
 
